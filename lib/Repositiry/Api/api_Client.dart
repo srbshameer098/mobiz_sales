@@ -6,7 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api_exception.dart';
 
 class ApiClient {
-  Future<Response> invokeAPI(String path, String method, Object? body) async {
+
+  late final Map<String, String> headers;
+
+  Future<Response> invokeAPI(String path,String method, Object? body) async {
     Map<String, String> headerParams = {};
     Response response;
 

@@ -4,4 +4,5 @@ part of 'mobiz_bloc.dart';
 sealed class MobizEvent {}
 class FetchMobiz extends MobizEvent {
 
+
 }

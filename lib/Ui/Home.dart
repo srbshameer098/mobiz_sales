@@ -18,6 +18,8 @@ late Mobiz response;
 class _HomeState extends State<Home> {
   List<int> _currentIndex = [];
   late Mobiz response;
+  late dynamic productid;
+
   @override
   void initState() {
     BlocProvider.of<MobizBloc>(context).add(FetchMobiz());
@@ -26,6 +28,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Color(0xff2a55ef),
         title: Text('Selected Products', style: TextStyle(color: Colors.white)),
@@ -61,14 +64,13 @@ class _HomeState extends State<Home> {
                   padding: const EdgeInsets.all(8.0),
                   child: GestureDetector(
                     onTap: (){
-                      Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (
-                                  builder) =>
-                                  Sales(
-                                     product:
-                                 response,
-                                  )));
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (builder) => Sales(name: response.data![index].name ?? "name",
+
+                        ),
+                      ));
+                      productid='${response.data![index].id}';
+                      print(productid);
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -94,6 +96,7 @@ class _HomeState extends State<Home> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+
                                   SizedBox(
                                     width: 300,
                                     child: Text(

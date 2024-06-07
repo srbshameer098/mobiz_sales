@@ -76,7 +76,8 @@ class _LoginState extends State<Login> {
                       // Navigate to Home screen on successful login
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Home()),
+                        MaterialPageRoute(builder: (context) => Home()
+                        ),
                       );
                     } else if (state is LoginFailure) {
                       ScaffoldMessenger.of(context).showSnackBar(

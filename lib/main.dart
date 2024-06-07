@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:project/Authentication/Login.dart';
 import 'package:project/Bloc/mobiz_bloc/mobiz_bloc.dart';
+import 'package:project/Bloc/product_bloc/product_bloc.dart';
 
 import 'Bloc/Login_bloc/login_bloc.dart';
 
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => MobizBloc(),),
         BlocProvider(create: (context) => LoginBloc(),),
+        BlocProvider(create: (context) => ProductBloc(),),
       ],
       child: MaterialApp(debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
