@@ -1,24 +1,80 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:project/Bloc/product_bloc/product_bloc.dart';
 import 'package:project/Repositiry/Model_Class/Product_Model.dart';
-import 'package:project/Repositiry/Model_Class/mobiz_Model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'Home.dart';
 
 class Sales extends StatefulWidget {
   final String name;
-  const Sales({super.key,
-    required this.name
-  });
+
+  const Sales({super.key, required this.name});
 
   @override
   State<Sales> createState() => _SalesState();
 }
 
 class _SalesState extends State<Sales> {
+  late String price = '';
+  late String unit = '';
+  late String Qty = '';
+  late String total = '';
+  late String grandtotal;
+
+  List<Map<String, dynamic>> productList = [];
+
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<ProductBloc>(context).add(FetchProduct(productId: 'productid'));
+    BlocProvider.of<ProductBloc>(context).add(FetchProduct());
+    _loadProductList();
+  }
+
+  Future<void> _loadProductList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> productListJson = prefs.getStringList('productList') ?? [];
+    setState(() {
+      productList = productListJson
+          .map((item) => jsonDecode(item) as Map<String, dynamic>)
+          .toList();
+    });
+  }
+
+  Future<void> clearProductList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('productList');
+    setState(() {
+      productList.clear();
+    });
+  }
+
+  void showPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Sales Saved'),
+          content: const Text('Inventory has been saved '),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: GestureDetector(
+                onTap: (){
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (builder) => Home(),
+                  ));
+                },
+                  child: const Text('OK')),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -112,13 +168,19 @@ class _SalesState extends State<Sales> {
                     return const Center(child: Text("ERROR"));
                   }
                   if (state is ProductblocLoaded) {
-                    final product =
-                        BlocProvider.of<ProductBloc>(context).productModel;
                     return ListView.builder(
                       scrollDirection: Axis.vertical,
-                      itemCount: product.data!.length,
+                      itemCount: productList.length,
                       itemBuilder: (BuildContext context, int index) {
+                        final products =
+                            BlocProvider.of<ProductBloc>(context).productModel;
+                        price = products.data![0].price.toString();
+                        Qty = products.data![0].qty.toString();
+                        unit = products.data![0].units![0].name.toString();
+                        total = products.data![0].price.toString() +
+                            products.data![0].qty.toString();
 
+                        var product = productList[index];
 
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -126,7 +188,7 @@ class _SalesState extends State<Sales> {
                             decoration: BoxDecoration(
                               border: Border.all(width: 1),
                               borderRadius:
-                                  const BorderRadius.all(Radius.circular(10)),
+                              const BorderRadius.all(Radius.circular(10)),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(7.0),
@@ -149,13 +211,13 @@ class _SalesState extends State<Sales> {
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                             // "Samsung Galaxy S24 Ultra 5G AI Smartphone (Titanium Gray, 12GB, 512GB Storage)",
-                                             widget.name.toString(),
+                                              // "Samsung Galaxy S24 Ultra 5G AI Smartphone (Titanium Gray, 12GB, 512GB Storage)",
+                                              product['name'].toString(),
                                               style:
-                                                  const TextStyle(fontSize: 20),
+                                              const TextStyle(fontSize: 20),
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -224,7 +286,7 @@ class _SalesState extends State<Sales> {
                                             width: 58,
                                             child: Center(
                                               child: Text(
-                                            product.data![index].units![0].name.toString(),
+                                                unit,
                                                 maxLines: 1,
                                                 style: const TextStyle(
                                                     fontWeight: FontWeight.w500,
@@ -242,7 +304,7 @@ class _SalesState extends State<Sales> {
                                             fontWeight: FontWeight.w400,
                                             color: Colors.grey),
                                       ),
-                                      const SizedBox(width: 3),
+                                      SizedBox(width: 3),
                                       Container(
                                         decoration: BoxDecoration(
                                           color: const Color(0xffffffff),
@@ -251,14 +313,14 @@ class _SalesState extends State<Sales> {
                                           border: Border.all(
                                               width: 1, color: Colors.grey),
                                         ),
-                                        child: const Padding(
+                                        child: Padding(
                                           padding: EdgeInsets.symmetric(
                                               horizontal: 3, vertical: 2),
                                           child: SizedBox(
                                             width: 30,
                                             child: Center(
                                               child: Text(
-                                                '1',
+                                                product['qty'],
                                                 maxLines: 1,
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.w500,
@@ -276,26 +338,28 @@ class _SalesState extends State<Sales> {
                                             fontWeight: FontWeight.w400,
                                             color: Colors.grey),
                                       ),
-                                      const SizedBox(width: 5),
+                                      SizedBox(width: 5),
                                       Container(
                                         decoration: BoxDecoration(
-                                          color: const Color(0xffffffff),
-                                          borderRadius: const BorderRadius.all(
+                                          color: Color(0xffffffff),
+                                          borderRadius: BorderRadius.all(
                                               Radius.circular(20)),
                                           border: Border.all(
                                               width: 1, color: Colors.grey),
                                         ),
-                                        child: const Padding(
+                                        child: Padding(
                                           padding: EdgeInsets.symmetric(
                                               horizontal: 3, vertical: 2),
                                           child: Center(
-                                            child: SizedBox(width: 50,
+                                            child: SizedBox(
+                                              width: 50,
                                               child: Center(
                                                 child: Text(
-                                                                        '200.00',
+                                                  product['price'].toString(),
                                                   maxLines: 1,
                                                   style: TextStyle(
-                                                      fontWeight: FontWeight.w500,
+                                                      fontWeight:
+                                                      FontWeight.w500,
                                                       color: Colors.black),
                                                 ),
                                               ),
@@ -348,7 +412,16 @@ class _SalesState extends State<Sales> {
             const SummarySection(),
             const SizedBox(height: 50),
             Center(
-              child: SaveButton(),
+              child: GestureDetector(
+                onTap: () async {
+                  await clearProductList();
+                  showPopup(context);
+                  // Navigator.of(context).push(MaterialPageRoute(
+                  //   builder: (builder) => Home(),
+                  // ));
+                },
+                child: const SaveButton(),
+              ),
             ),
           ],
         ),
@@ -449,8 +522,8 @@ class SummarySection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('Total : 400.0'),
-              Text('Tax : 20.0'),
+              Text('Total :300'),
+              Text('Tax : 20.00'),
               Text('Round Off : 0.00'),
               Text('Grand Total : 420.00'),
             ],

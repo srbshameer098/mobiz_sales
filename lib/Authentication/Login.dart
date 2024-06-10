@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:project/Ui/Home.dart';
 import '../Bloc/Login_bloc/login_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../Repositiry/Model_Class/Login_Model.dart';
 
 class Login extends StatefulWidget {
   Login({super.key});
@@ -13,7 +16,13 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  late Loginmodel response;
 
+
+  void addIntToSF(String storeId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('storeId', storeId);
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,6 +88,7 @@ class _LoginState extends State<Login> {
                         MaterialPageRoute(builder: (context) => Home()
                         ),
                       );
+                      response = BlocProvider.of<LoginBloc>(context).loginModel;
                     } else if (state is LoginFailure) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Login Failed')),
@@ -188,6 +198,9 @@ class _LoginState extends State<Login> {
                                     password: passwordController.text,
                                   ),
                                 );
+                                print( response.user!.storeId);
+                                // String userid =  response.user!.storeId.toString();
+
                               },
                               child: Container(
                                 decoration: BoxDecoration(
